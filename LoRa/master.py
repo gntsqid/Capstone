@@ -3,6 +3,8 @@
 
 # Import Python System Libraries
 import time
+import logging
+from datetime import datetime
 # Import Blinka Libraries
 import busio
 from digitalio import DigitalInOut, Direction, Pull
@@ -12,7 +14,7 @@ import adafruit_ssd1306
 # Import RFM9x
 import adafruit_rfm9x
 
-import socket 
+import socket
 
 # Button A
 btnA = DigitalInOut(board.D5)
@@ -53,6 +55,9 @@ prev_packet = None
 hostname = socket.gethostname()
 hostname_str = f"{hostname}\r\n"
 
+# Configure logging
+logging.basicConfig(filename='/home/ronin/Documents/LOGS/packets.log', level=logging.INFO, format='%(asctime)s - %(message)s')
+
 while True:
     packet = None
     # draw a box to clear the image
@@ -71,27 +76,30 @@ while True:
         packet_text = str(prev_packet, "utf-8")
         display.text('RX: ', 0, 0, 1)
         display.text(packet_text, 25, 0, 1)
+
+        # Log the received packet
+        logging.info(packet_text)
+
         time.sleep(1)
 
     if not btnA.value:
         # Send Button A
         display.fill(0)
-        button_a_data = bytes(hostname_str,"utf-8")
+        button_a_data = bytes(hostname_str, "utf-8")
         rfm9x.send(button_a_data)
-        display.text('Sent Button A!', 25, 15, 1)
+        display.text('Sent hostname!', 25, 15, 1)
     elif not btnB.value:
         # Send Button B
         display.fill(0)
-        button_b_data = bytes("Button B!\r\n","utf-8")
+        button_b_data = bytes("Button B!\r\n", "utf-8")
         rfm9x.send(button_b_data)
         display.text('Sent Button B!', 25, 15, 1)
     elif not btnC.value:
         # Send Button C
         display.fill(0)
-        button_c_data = bytes("Button C!\r\n","utf-8")
+        button_c_data = bytes("Button C!\r\n", "utf-8")
         rfm9x.send(button_c_data)
         display.text('Sent Button C!', 25, 15, 1)
-
 
     display.show()
     time.sleep(0.1)
