@@ -59,3 +59,15 @@ sudo minicom -b 9600 -D /dev/ttyUSB0
 >> See the gps-get.py above
 
 ---
+**10/11/2024**\
+I have learned that what I am doing is defined as (in some ways) [Predictive Policing](https://en.wikipedia.org/wiki/Predictive_policing).\
+This in general involves huge analytical models to determine victims, perpetrators, etc., while I am only doing it as a commercially avaialable product for general safety. 
+
+I have decided to architect the maps in the following way:
+  - If no specific address is given, i.e. Oxnard,CA then add it to the boundary box/total count to avoid muddying heatmaps
+  - On the note of city level boxes, make that the default and add a toggle button to make all cities there own heatmaps to switch back and forth.
+  - Heatmaps will be gradients, blending in (for example 10) colors as a range given a percentage (such as 0 - 100%)
+  - I am collecting GeoData from Sensors and may want that to be separate from harvested data (REVISIT) 
+  - If harvestable data is abvailable, *make sure its reputable, legal, and redacts PII*. Potentially look into contracts with the Police Department for data or find online sources.
+
+
