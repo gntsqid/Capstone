@@ -70,4 +70,16 @@ I have decided to architect the maps in the following way:
   - I am collecting GeoData from Sensors and may want that to be separate from harvested data (REVISIT) 
   - If harvestable data is abvailable, *make sure its reputable, legal, and redacts PII*. Potentially look into contracts with the Police Department for data or find online sources.
 
+---
+**1/1/2025**\
+I have created a postgresql database to host everything.\
+This will be where the data gets piped to and has tables with columns like:
+- parking space number
+- available (bool)
+- functional (bool)
+
+The next step is to create a REST API to expose it.
+
+I have also decided to create an Android app instead and am dropping PHP fully. 
+
 
