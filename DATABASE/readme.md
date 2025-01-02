@@ -32,3 +32,16 @@ capstone=> \d machines
 Indexes:
     "machines_pkey" PRIMARY KEY, btree (machine_id)
 ```
+
+---
+#### Machines
+> dev-note: 1/1/2025
+```Bash
+capstone=> select * from machines;
+ machine_id | hostname  | online | parking_lot | parking_space |  type   | parking_space_available
+------------+-----------+--------+-------------+---------------+---------+-------------------------
+          1 | oni       | f      | unknown     | unknown       | unknown | f
+          2 | kitsune   | f      | unknown     | unknown       | unknown | f
+          3 | jotunheim | t      | N/A         | N/A           | server  |
+(3 rows)
+```
