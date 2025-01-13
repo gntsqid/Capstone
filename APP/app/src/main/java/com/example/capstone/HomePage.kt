@@ -12,11 +12,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+// mapbox uses
+import androidx.compose.foundation.layout.fillMaxSize
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+
 class HomePage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApp() // TEST FUNCTION
+            //MyApp() // TEST FUNCTION
+            MapTest() // mapbox test
         }
     }
 }
@@ -45,3 +52,18 @@ fun MyApp() {
         }
     }
 }
+
+@Composable
+fun MapTest() {
+  MapboxMap(Modifier.fillMaxSize(),
+    mapViewportState = rememberMapViewportState {
+        setCameraOptions {
+            zoom(2.0)
+            center(Point.fromLngLat(-98.0, 39.5))
+            pitch(0.0)
+            bearing(0.0)
+        }
+    }
+  )
+}
+

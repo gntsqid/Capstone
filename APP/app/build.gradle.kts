@@ -50,6 +50,9 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
+    implementation("com.mapbox.maps:android:11.9.0") // mapbox
+    implementation("com.mapbox.extension:maps-compose:11.9.0")
+
     // Core Compose libraries
     implementation("androidx.activity:activity-compose:1.8.0") // Provides `setContent`
     implementation("androidx.compose.ui:ui")
