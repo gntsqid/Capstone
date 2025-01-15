@@ -105,16 +105,12 @@ fun MapTest() {
         modifier = Modifier.fillMaxSize(),
         mapViewportState = rememberMapViewportState {
             setCameraOptions {
-                zoom(14.0) // Adjust zoom level
-                center(Point.fromLngLat(-119.0436, 34.1621)) // Center to the given location
+                zoom(14.0) // FULL CAMPUS
+                center(Point.fromLngLat(-119.0436, 34.1621)) // CSUCI
                 pitch(0.0) // Flat map
-                bearing(0.0) // Orient to north
+                bearing(342.0) // 0 orients to north off of 360 degrees
             }
-        },
-        style = {
-            Style.MAPBOX_STREETS // Use a 2D-compatible style
         }
-    ).also {
-        Log.d("Mapbox", "Map initialized, loading style...")
-    }
+    )
 }
+
