@@ -12,24 +12,31 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-// Mapbox imports
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.mapbox.common.MapboxOptions
 import com.mapbox.geojson.Point
-import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.search.autocomplete.PlaceAutocomplete
+import com.mapbox.search.autocomplete.PlaceAutocompleteResult
+import kotlinx.coroutines.launch
 
 class HomePage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Mapbox Access Token
+        MapboxOptions.accessToken = getString(R.string.mapbox_access_token)
 
         // Check OpenGL ES version
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -51,17 +58,24 @@ class HomePage : ComponentActivity() {
         // Check if location services are enabled
         if (!isLocationEnabled()) {
             Log.e("HomePage", "Location services are not enabled!")
-            // Optionally prompt the user to enable location services
         }
+
+        // Retrieve the API key from resources
+        val accessToken = getString(R.string.mapbox_access_token)
 
         // Set Mapbox content
         setContent {
-            MapTest()
+            Column {
+                //MapTest()
+                Spacer(modifier = Modifier.height(16.dp))
+                SearchUI(accessToken) { query, callback ->
+                    performSearch(query, accessToken, callback)
+                }
+            }
         }
     }
 
     private fun requestLocationPermissions() {
-        // Use `this@HomePage` to explicitly reference the context
         if (ContextCompat.checkSelfPermission(
                 this@HomePage,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -76,10 +90,37 @@ class HomePage : ComponentActivity() {
     }
 
     private fun isLocationEnabled(): Boolean {
-        // Use `this@HomePage` for context when calling `getSystemService`
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun performSearch(
+        query: String,
+        accessToken: String,
+        onResults: (List<PlaceAutocompleteResult>) -> Unit
+    ) {
+        val placeAutocomplete = PlaceAutocomplete.create(locationProvider = null)
+
+        lifecycleScope.launch {
+            val response = placeAutocomplete.suggestions(query)
+            if (response.isValue) {
+                val suggestions = response.value.orEmpty()
+                Log.i("Search", "Suggestions: $suggestions")
+
+                if (suggestions.isNotEmpty()) {
+                    val result = placeAutocomplete.select(suggestions.first())
+                    result.onValue { searchResults ->
+                        onResults(listOf(searchResults)) // Pass the results to the callback
+                    }
+                    result.onError { error ->
+                        Log.e("Search", "Error selecting suggestion", error)
+                    }
+                }
+            } else {
+                Log.e("Search", "Error fetching suggestions: ${response.error}")
+            }
+        }
     }
 }
 
@@ -114,3 +155,44 @@ fun MapTest() {
     )
 }
 
+@Composable
+fun SearchUI(
+    accessToken: String,
+    performSearch: (String, (List<PlaceAutocompleteResult>) -> Unit) -> Unit
+) {
+    var query by remember { mutableStateOf("") }
+    var results by remember { mutableStateOf(listOf<PlaceAutocompleteResult>()) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextField(
+            value = query,
+            onValueChange = { query = it },
+            label = { Text("Search for a place") }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                performSearch(query) { searchResults ->
+                    results = searchResults
+                }
+            }
+        ) {
+            Text("Search")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn {
+            items(results) { result ->
+                Text(result.name ?: "Unknown result")
+            }
+        }
+    }
+}

@@ -50,8 +50,21 @@ dependencies {
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    implementation("com.mapbox.maps:android:11.9.0") // mapbox
-    implementation("com.mapbox.extension:maps-compose:11.9.0")
+    // Mapbox dependencies
+    implementation("com.mapbox.maps:android:11.9.0") // Mapbox Maps SDK
+    implementation("com.mapbox.extension:maps-compose:11.9.0") // Mapbox Compose Extension
+    implementation("com.mapbox.search:mapbox-search-android:2.7.0") // Mapbox Search SDK
+    implementation("com.mapbox.search:autofill:2.7.0")
+    implementation("com.mapbox.search:discover:2.7.0")
+    implementation("com.mapbox.search:place-autocomplete:2.7.0")
+    implementation("com.mapbox.search:offline:2.7.0")
+    implementation("com.mapbox.search:mapbox-search-android-ui:2.7.0")
+    implementation("com.mapbox.search:autofill:2.7.0")
+    implementation("com.mapbox.search:discover:2.7.0")
+    implementation("com.mapbox.search:place-autocomplete:2.7.0")
+    implementation("com.mapbox.search:offline:2.7.0")
+    implementation("com.mapbox.search:mapbox-search-android:2.7.0")
+    implementation("com.mapbox.search:mapbox-search-android-ui:2.7.0")
 
     // Core Compose libraries
     implementation("androidx.activity:activity-compose:1.8.0") // Provides `setContent`
@@ -62,13 +75,16 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // Other dependencies
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    // AndroidX and Material dependencies
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.9.0")
+
+    // Google Play Services for location
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    // Testing libraries
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
