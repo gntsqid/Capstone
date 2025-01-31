@@ -101,6 +101,114 @@ Then view it:
 ```Bash
 select * from table_1;
 ```
+After doing a few of these, we have a working simple table with a few things int it.\
+The next step is to attempt to access it via an API.
+
+---
+## DATABASE API
+First, for any API, it is suggested to grab the folllowing:
+```Bash
+sudo apt install -y jq ncat
+```
+suggested BASH based API Server:
+```Bash
+#!/bin/bash
+
+DB_USER="user"
+DB_PASS="password"
+DB_NAME="stuff"
+TOKEN_FILE="tokens.txt"
+PORT=8080
+
+# Function to generate a random token
+generate_token() {
+    echo "$(date +%s | sha256sum | head -c 16)"
+}
+
+# Function to authenticate user and generate token
+authenticate_user() {
+    read -r username password <<<"$1"
+    if [[ "$username" == "user" && "$password" == "password" ]]; then
+        token=$(generate_token)
+        echo "$token" >> "$TOKEN_FILE"
+        echo "{\"auth_token\": \"$token\"}"
+    else
+        echo "{\"error\": \"Invalid credentials\"}"
+    fi
+}
+
+# Function to validate token
+validate_token() {
+    local token="$1"
+    grep -q "$token" "$TOKEN_FILE" && echo "valid" || echo "invalid"
+}
+
+# Function to query the database
+get_thing() {
+    local thing="$1"
+    psql -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT * FROM table_1 WHERE description='$thing'" | jq -R -s 'split("\n")[:-1] | map(split("|") | {id: .[0], description: .[1], created_at: .[2]})'
+}
+
+# Start API Server
+while true; do
+    echo "Listening on port $PORT..."
+    # Read input from netcat
+    request=$(nc -l -p "$PORT" -q 1)
+    
+    # Parse the HTTP request method and body
+    method=$(echo "$request" | head -n 1 | awk '{print $1}')
+    url=$(echo "$request" | head -n 1 | awk '{print $2}')
+    body=$(echo "$request" | tail -n 1)
+    
+    # Authentication request
+    if [[ "$url" == "/api/auth" && "$method" == "POST" ]]; then
+        auth_response=$(authenticate_user "$body")
+        echo -e "HTTP/1.1 200 OK\nContent-Type: application/json\n\n$auth_response"
+
+    # Get thing request
+    elif [[ "$url" =~ "/api/stuff/get-thing" && "$method" == "POST" ]]; then
+        auth_token=$(echo "$body" | grep -oP '(?<=auth: ")[^"]+')
+        thing=$(echo "$body" | grep -oP '(?<=thing: ")[^"]+')
+
+        if [[ "$(validate_token "$auth_token")" == "valid" ]]; then
+            data=$(get_thing "$thing")
+            echo -e "HTTP/1.1 200 OK\nContent-Type: application/json\n\n$data"
+        else
+            echo -e "HTTP/1.1 403 Forbidden\nContent-Type: application/json\n\n{\"error\": \"Invalid token\"}"
+        fi
+
+    else
+        echo -e "HTTP/1.1 404 Not Found\nContent-Type: application/json\n\n{\"error\": \"Invalid endpoint\"}"
+    fi
+done
+```
+Then we run it and test:
+```Bash
+curl -X POST http://localhost:8080/api/auth -d "user password"
+```
+We should get a token back, then we can test further:
+```Bash
+curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "5f4dcc3b5aa765d6" thing: "thing_2"'
+```
+Ideally, we'll get a response like the following:
+```JSON
+[
+  {
+    "id": "2",
+    "description": "thing_2",
+    "created_at": "2025-01-31 18:29:23.148847"
+  }
+]
+```
+
+
+
+
+
+
+
+
+
 
 
 
