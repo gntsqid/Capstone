@@ -70,8 +70,37 @@ Restart the service to keep these changes:
 sudo systemctl restart postgresql
 ```
 ### Basic Maneuvering
-
-
+Log in as our new user:
+```Bash
+psql -U user -d stuff -W
+```
+We will be logged in to our "stuff" database.\
+Now we want to make a table:
+```Bash
+CREATE TABLE table_1 (
+    id SERIAL PRIMARY KEY,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+See the table you made:
+```Bash
+# diplay tables in database
+\dt
+```
+then display the table itself:
+```Bash
+# display table columns
+\d <table name>
+```
+Let's add a few quick things to it:
+```Bash
+insert into table_1(description) values('thing_1');
+```
+Then view it:
+```Bash
+select * from table_1;
+```
 
 
 
