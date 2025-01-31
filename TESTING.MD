@@ -27,9 +27,60 @@ I am going to call it *stuff*:
 createdb stuff
 ```
 
-### USAGE
+### ACCESS
 Log in to the database:
 ```Bash
 psql
 ```
+Let's now add a simple user:
+```Bash
+CREATE USER "user" WITH ENCRYPTED PASSWORD 'password';
+GRANT ALL PRIVILEGES ON DATABASE stuff TO "user";
+ALTER DATABASE stuff OWNER TO "user";
+```
+quit and switch back to our normal user:
+```Bash
+\q
+```
+
+> Impartant step below:
+
+We now want to *enable remote connections* so that we can sign in to the database from other machines:
+```Bash
+sudo vim /etc/postgresql/<VERSION NUMBER>/main/postgresql.conf
+```
+Then un-comment the following line and replace it to listen on all interfaces:
+```Bash
+#listen_addresses = 'localhost'
+
+# replace with
+listen_addresses = '*'
+```
+Now, we wanmt to actually enable the connections:
+```Bash
+sudo vim /etc/postgresql/14/main/pg_hba.conf
+```
+Add the following line to allow conenction from *ANYWHERE*:
+```Bash
+host    all             all             0.0.0.0/0               md5
+```
+
+Restart the service to keep these changes:
+```Bash
+sudo systemctl restart postgresql
+```
+### Basic Maneuvering
+
+
+
+
+
+
+
+
+
+
+
+
+
 
