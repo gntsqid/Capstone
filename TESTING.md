@@ -516,7 +516,7 @@ user@slag:~$ curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "e
 > NOTE: Auth auto expires on the service restarting!
 >> This is because it stored them in the servers memory...lol
 
-
+> TODO: **Require credentials to get an auth token** 
 
 
 
