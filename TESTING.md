@@ -204,6 +204,263 @@ Ideally, we'll get a response like the following:
 My first result:\
 ![image](https://github.com/user-attachments/assets/cf5bd4ee-6689-4a6c-83fa-aac30f433820)
 
+This keeps failing because of the reliance on netcat, switching to raw networking C:
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <time.h>
+#include <libpq-fe.h>
+
+#define PORT 8080
+#define MAX_TOKENS 100
+
+typedef struct {
+    char token[33];  // 32-char token + null terminator
+} AuthToken;
+
+// Array to store auth tokens (simple in-memory storage)
+AuthToken tokens[MAX_TOKENS];
+int token_count = 0;
+
+// Generate a random authentication token
+void generate_token(char *buffer, size_t length) {
+    static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    for (size_t i = 0; i < length - 1; i++) {
+        buffer[i] = charset[rand() % (sizeof(charset) - 1)];
+    }
+    buffer[length - 1] = '\0';
+}
+
+// Validate if token exists
+int is_valid_token(const char *token) {
+    for (int i = 0; i < token_count; i++) {
+        if (strcmp(tokens[i].token, token) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// Handle authentication request
+void handle_auth(int client_socket) {
+    char new_token[33];
+    generate_token(new_token, 33);
+
+    // Store the token
+    if (token_count < MAX_TOKENS) {
+        strcpy(tokens[token_count++].token, new_token);
+    }
+
+    char response[256];
+    snprintf(response, sizeof(response),
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: application/json\r\n"
+        "Content-Length: %lu\r\n"
+        "\r\n"
+        "{\"auth_token\": \"%s\"}\n",
+        strlen(new_token) + 20, new_token);
+
+    write(client_socket, response, strlen(response));
+}
+
+// Fetch data from PostgreSQL
+void handle_get_thing(int client_socket, char *token, char *thing) {
+    if (!is_valid_token(token)) {
+        const char *error_json = "{\"error\": \"Invalid token\"}\n";
+        dprintf(client_socket,
+            "HTTP/1.1 403 Forbidden\r\n"
+            "Content-Type: application/json\r\n"
+            "Content-Length: %lu\r\n"
+            "\r\n"
+            "%s",
+            strlen(error_json), error_json);
+        return;
+    }
+
+    // Connect to PostgreSQL
+    PGconn *conn = PQconnectdb("user=user password=password dbname=stuff");
+    if (PQstatus(conn) != CONNECTION_OK) {
+        const char *error_json = "{\"error\": \"Database connection failed\"}\n";
+        dprintf(client_socket, "HTTP/1.1 500 Internal Server Error\r\n"
+                               "Content-Type: application/json\r\n"
+                               "Content-Length: %lu\r\n"
+                               "\r\n"
+                               "%s",
+                               strlen(error_json), error_json);
+        PQfinish(conn);
+        return;
+    }
+
+    // Query database
+    char query[256];
+    snprintf(query, sizeof(query), "SELECT * FROM table_1 WHERE description='%s'", thing);
+    PGresult *res = PQexec(conn, query);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        const char *error_json = "{\"error\": \"Query failed\"}\n";
+        dprintf(client_socket, "HTTP/1.1 500 Internal Server Error\r\n"
+                               "Content-Type: application/json\r\n"
+                               "Content-Length: %lu\r\n"
+                               "\r\n"
+                               "%s",
+                               strlen(error_json), error_json);
+        PQclear(res);
+        PQfinish(conn);
+        return;
+    }
+
+    // Dynamically allocate a buffer for JSON response
+    size_t json_size = 512 + (PQntuples(res) * 256); // Estimate response size
+    char *json_response = malloc(json_size);
+    if (!json_response) {
+        const char *error_json = "{\"error\": \"Memory allocation failed\"}\n";
+        dprintf(client_socket, "HTTP/1.1 500 Internal Server Error\r\n"
+                               "Content-Type: application/json\r\n"
+                               "Content-Length: %lu\r\n"
+                               "\r\n"
+                               "%s",
+                               strlen(error_json), error_json);
+        PQclear(res);
+        PQfinish(conn);
+        return;
+    }
+
+    strcpy(json_response, "[");
+    for (int i = 0; i < PQntuples(res); i++) {
+        char row[256];
+        snprintf(row, sizeof(row),
+                 "{\"id\": \"%s\", \"description\": \"%s\", \"created_at\": \"%s\"}%s",
+                 PQgetvalue(res, i, 0),
+                 PQgetvalue(res, i, 1),
+                 PQgetvalue(res, i, 2),
+                 (i == PQntuples(res) - 1) ? "" : ",");
+        strcat(json_response, row);
+    }
+    strcat(json_response, "]\n");
+
+    // Allocate buffer for HTTP response
+    size_t response_size = 512 + strlen(json_response);
+    char *response = malloc(response_size);
+    if (!response) {
+        const char *error_json = "{\"error\": \"Memory allocation failed\"}\n";
+        dprintf(client_socket, "HTTP/1.1 500 Internal Server Error\r\n"
+                               "Content-Type: application/json\r\n"
+                               "Content-Length: %lu\r\n"
+                               "\r\n"
+                               "%s",
+                               strlen(error_json), error_json);
+        free(json_response);
+        PQclear(res);
+        PQfinish(conn);
+        return;
+    }
+
+    snprintf(response, response_size,
+             "HTTP/1.1 200 OK\r\n"
+             "Content-Type: application/json\r\n"
+             "Content-Length: %lu\r\n"
+             "\r\n"
+             "%s",
+             strlen(json_response), json_response);
+
+    // Send the response and free memory
+    write(client_socket, response, strlen(response));
+
+    free(json_response);
+    free(response);
+    PQclear(res);
+    PQfinish(conn);
+}
+
+// Handle HTTP requests
+void handle_client(int client_socket) {
+    char buffer[4096];
+    int read_size = read(client_socket, buffer, sizeof(buffer) - 1);
+    if (read_size <= 0) return;
+
+    buffer[read_size] = '\0';
+    printf("Received request:\n%s\n", buffer);
+
+    // Extract HTTP method & path
+    char method[8], path[64];
+    sscanf(buffer, "%s %s", method, path);
+
+    // Handle authentication request
+    if (strcmp(method, "POST") == 0 && strcmp(path, "/api/auth") == 0) {
+        handle_auth(client_socket);
+    }
+    // Handle get-thing request
+    else if (strcmp(method, "POST") == 0 && strcmp(path, "/api/stuff/get-thing") == 0) {
+        char *auth_header = strstr(buffer, "auth: ");
+        char *thing_header = strstr(buffer, "thing: ");
+
+        if (auth_header && thing_header) {
+            char token[33], thing[64];
+            sscanf(auth_header, "auth: \"%32[^\"]\"", token);
+            sscanf(thing_header, "thing: \"%63[^\"]\"", thing);
+            handle_get_thing(client_socket, token, thing);
+        } else {
+            const char *error_json = "{\"error\": \"Invalid request format\"}\n";
+            write(client_socket, error_json, strlen(error_json));
+        }
+    }
+    // Unknown request
+    else {
+        const char *error_json = "{\"error\": \"Resource not found\"}\n";
+        write(client_socket, error_json, strlen(error_json));
+    }
+
+    close(client_socket);
+}
+
+// Start server
+int main() {
+    srand(time(NULL)); // Seed for token generation
+
+    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in server_addr = {0};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
+
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Bind failed");
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(server_socket, 10) < 0) {
+        perror("Listen failed");
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Server listening on port %d\n", PORT);
+
+    while (1) {
+        int client_socket = accept(server_socket, NULL, NULL);
+        if (client_socket < 0) {
+            perror("Accept failed");
+            continue;
+        }
+        handle_client(client_socket);
+    }
+
+    close(server_socket);
+    return 0;
+}
+```
+
+New result after trying the C file:\
+![image](https://github.com/user-attachments/assets/8fc138f7-71ae-43bc-8eda-c4cfaab34f9c)
 
 
 
