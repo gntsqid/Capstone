@@ -513,6 +513,8 @@ user@slag:~$ curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "e
 user@slag:~$ curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "e5HhtO7SIOVn51rmwIX1ubYdKbLwfj8j" thing: "thing_2"'
 [{"id": "2", "description": "thing_2", "created_at": "2025-01-31 18:29:23.148847"}]
 ```
+![image](https://github.com/user-attachments/assets/6a5cba03-a4f4-4497-9fbc-5a0b64840686)
+
 > NOTE: Auth auto expires on the service restarting!
 >> This is because it stored them in the servers memory...lol
 
