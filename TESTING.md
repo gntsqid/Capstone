@@ -460,8 +460,61 @@ int main() {
 ```
 
 New result after trying the C file:\
-![image](https://github.com/user-attachments/assets/8fc138f7-71ae-43bc-8eda-c4cfaab34f9c)
+![image](https://github.com/user-attachments/assets/8fc138f7-71ae-43bc-8eda-c4cfaab34f9c)\
+*Sorry, image a bit zoomed out...*\
+here is server side:
+```Bash
+user@slag:~$ ./api-server
+Server listening on port 8080
+Received request:
+POST /api/auth HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/8.5.0
+Accept: */*
 
+
+Received request:
+POST /api/stuff/get-thing HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/8.5.0
+Accept: */*
+Content-Length: 43
+Content-Type: application/x-www-form-urlencoded
+
+auth: "abc123def456ghi789" thing: "thing_2"
+Received request:
+POST /api/stuff/get-thing HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/8.5.0
+Accept: */*
+Content-Length: 57
+Content-Type: application/x-www-form-urlencoded
+
+auth: "e5HhtO7SIOVn51rmwIX1ubYdKbLwfj8j" thing: "thing_2"
+Received request:
+POST /api/stuff/get-thing HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/8.5.0
+Accept: */*
+Content-Length: 57
+Content-Type: application/x-www-form-urlencoded
+
+auth: "e5HhtO7SIOVn51rmwIX1ubYdKbLwfj8j" thing: "thing_2"
+```
+Client side:
+```Bash
+user@slag:~$ curl -X POST http://localhost:8080/api/auth
+{"auth_token": "e5HhtO7SIOVn51rmwIX1ubYdKbLwfj8j"}
+curl: (18) transfer closed with 1 bytes remaining to read
+user@slag:~$ curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "abc123def456ghi789" thing: "thing_2"'
+{"error": "Invalid token"}
+user@slag:~$ curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "e5HhtO7SIOVn51rmwIX1ubYdKbLwfj8j" thing: "thing_2"'
+[{"id": "2", "description": "thing_2", "created_at": "2025-01-31 18:29:23.148847"}]
+user@slag:~$ curl -X POST http://localhost:8080/api/stuff/get-thing -d 'auth: "e5HhtO7SIOVn51rmwIX1ubYdKbLwfj8j" thing: "thing_2"'
+[{"id": "2", "description": "thing_2", "created_at": "2025-01-31 18:29:23.148847"}]
+```
+> NOTE: Auth auto expires on the service restarting!
+>> This is because it stored them in the servers memory...lol
 
 
 
