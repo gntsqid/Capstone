@@ -201,7 +201,9 @@ Ideally, we'll get a response like the following:
 ]
 ```
 
-My first result: 
+My first result:\
+![image](https://github.com/user-attachments/assets/cf5bd4ee-6689-4a6c-83fa-aac30f433820)
+
 
 
 
