@@ -48,6 +48,7 @@ sudo ufw allow 3306/tcp
 sudo ufw reload
 ```
 
+---
 ### Administrative Accessing
 ```Bash
 mariadb -u user -p --database=capstone
