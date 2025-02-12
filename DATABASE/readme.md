@@ -48,39 +48,48 @@ mariadb -u <username> -p --database=capstone --execute='describe machines;'
 
 ---
 ### Tables
-> dev-note: 1/1/2025
-```Bash
-capstone=> \dt
-         List of relations
- Schema |   Name   | Type  | Owner 
---------+----------+-------+-------
- public | machines | table | odin
-(1 row)
+> dev-note: 2/11/2025
+```SQL
+MariaDB [capstone]> show tables;
++--------------------+
+| Tables_in_capstone |
++--------------------+
+| machines           |
++--------------------+
+1 row in set (0.000 sec)
 
-capstone=> \d machines
-                                                Table "public.machines"
-         Column          |         Type          | Collation | Nullable |                   Default                    
--------------------------+-----------------------+-----------+----------+----------------------------------------------
- machine_id              | integer               |           | not null | nextval('machines_machine_id_seq'::regclass)
- hostname                | character varying(23) |           | not null | 
- online                  | boolean               |           | not null | false
- parking_lot             | character varying(7)  |           | not null | 'unknown'::character varying
- parking_space           | character varying(7)  |           | not null | 'unknown'::character varying
- type                    | character varying(50) |           | not null | 'unknown'::character varying
- parking_space_available | boolean               |           |          | false
-Indexes:
-    "machines_pkey" PRIMARY KEY, btree (machine_id)
+MariaDB [capstone]> describe machines;
++-------------------------+--------------+------+-----+---------+----------------+
+| Field                   | Type         | Null | Key | Default | Extra          |
++-------------------------+--------------+------+-----+---------+----------------+
+| machine_id              | int(11)      | NO   | PRI | NULL    | auto_increment |
+| hostname                | varchar(100) | NO   |     | NULL    |                |
+| online                  | tinyint(1)   | NO   |     | 0       |                |
+| parking_lot             | varchar(50)  | NO   |     | unknown |                |
+| parking_space           | varchar(50)  | NO   |     | unknown |                |
+| type                    | varchar(50)  | NO   |     | unknown |                |
+| parking_space_available | tinyint(1)   | NO   |     | 0       |                |
++-------------------------+--------------+------+-----+---------+----------------+
+7 rows in set (0.001 sec)
 ```
 
 ---
 #### Machines
-> dev-note: 1/1/2025
+> dev-note: 2/11/2025
 ```Bash
-capstone=> select * from machines;
- machine_id | hostname  | online | parking_lot | parking_space |  type   | parking_space_available
-------------+-----------+--------+-------------+---------------+---------+-------------------------
-          1 | oni       | f      | unknown     | unknown       | unknown | f
-          2 | kitsune   | f      | unknown     | unknown       | unknown | f
-          3 | jotunheim | t      | N/A         | N/A           | server  |
-(3 rows)
+MariaDB [capstone]> select * from machines;
++------------+-----------+--------+-------------+---------------+--------+-------------------------+
+| machine_id | hostname  | online | parking_lot | parking_space | type   | parking_space_available |
++------------+-----------+--------+-------------+---------------+--------+-------------------------+
+|          1 | oni       |      0 | unknown     | unknown       | relay  |                       0 |
+|          2 | kitsune   |      0 | unknown     | unknown       | sensor |                       0 |
+|          3 | jotunheim |      0 | N/A         | N/A           | server |                       0 |
++------------+-----------+--------+-------------+---------------+--------+-------------------------+
+3 rows in set (0.000 sec)
+```
+
+---
+## Modifications
+```SQL
+update machines set <field>=<new value> where <field>=<describor value>;
 ```
