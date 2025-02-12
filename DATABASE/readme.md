@@ -93,3 +93,19 @@ MariaDB [capstone]> select * from machines;
 ```SQL
 update machines set <field>=<new value> where <field>=<describor value>;
 ```
+
+---
+## API
+I gave up on exposing the API via raw C web sockets.\
+We will be using gunicorn and uvicorn
+```Bash
+pip3 install gunicorn uvicorn
+```
+```Bash
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker db-api:app --bind 0.0.0.0:8000
+```
+Be sure to set the mariadb to allow connections from anywhere:
+```Bash
+# replace bind-address with 0.0.0.0
+sudo vim /etc/mysql/mariadb.conf.d/50-server.cnf
+```
