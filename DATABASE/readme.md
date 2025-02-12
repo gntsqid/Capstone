@@ -16,7 +16,7 @@ sudo mariadb -u root
 ```
 ```SQL
 CREATE DATABASE capstone;
-use database capstone;
+use capstone;
 ```
 ```SQL
 CREATE TABLE machines (
