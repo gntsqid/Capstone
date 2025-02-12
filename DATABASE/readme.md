@@ -37,6 +37,17 @@ flush privileges;
 sudo systemctl restart mariadb
 ```
 
+---
+#### Firewall
+This gets its own section so I don't forget.
+mariadb uses port 3306.
+```Bash
+sudo ufw allow 3306/tcp
+```
+```Bash
+sudo ufw reload
+```
+
 ### Administrative Accessing
 ```Bash
 mariadb -u user -p --database=capstone
