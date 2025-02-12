@@ -43,7 +43,7 @@ mariadb -u user -p --database=capstone
 ```
 We can also execute commands
 ```Bash
-mariadb -u user -p --database=capstone --execute='select * from machines;'
+mariadb -u <username> -p --database=capstone --execute='describe machines;'
 ```
 
 ---
