@@ -12,5 +12,16 @@ table="machines"
 user="loki"
 password=$LOKI
 
+machines=("oni" "kitsune")
+
+for host in "${machines[@]}"; do
+        echo $host
+done
+
+# Checking status of each machine
+for host in "${machines[@]}"; do
+    mariadb -u $user --password="$password" --database="$database" --execute="select * from $table where hostname='$host';"
+done
+
 query="select * from $table;"
 mariadb -u $user --password="$password" --database="$database" --execute="$query"
