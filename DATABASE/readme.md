@@ -6,7 +6,7 @@ Please see initial commits for postgres commands if needed.
 ## Notes
 ### Setup
 ```Bash
-sudo apt install mariadb -y
+sudo apt install mariadb-server -y
 ```
 ```Bash
 sudo systemctl enable --now mariadb
