@@ -1,108 +1,54 @@
-# THIS IS MY OVERWRITE OF THE ORIGINAL
-# VERSION CONTROL IS USED
-# THIS CODE IS DESIGNED FOR KITSUNE
-
-# Import Python System Libraries
-import time
-# Import Blinka Libraries
-import busio
-from digitalio import DigitalInOut, Direction, Pull
+import sys
+import socket
 import board
-# Import the SSD1306 module.
-import adafruit_ssd1306
-# Import RFM9x
+import busio
+import digitalio
 import adafruit_rfm9x
 
-import socket
+# Encryption Key
+KEY = b"<SECRET KEY>"
 
-# Button A
-btnA = DigitalInOut(board.D5)
-btnA.direction = Direction.INPUT
-btnA.pull = Pull.UP
+# XOR Encryption Function
+def xor_encrypt_decrypt(data, key):
+    return bytes([data[i] ^ key[i % len(key)] for i in range(len(data))])
 
-# Button B
-btnB = DigitalInOut(board.D6)
-btnB.direction = Direction.INPUT
-btnB.pull = Pull.UP
-
-# Button C
-btnC = DigitalInOut(board.D12)
-btnC.direction = Direction.INPUT
-btnC.pull = Pull.UP
-
-# Create the I2C interface.
-i2c = busio.I2C(board.SCL, board.SDA)
-
-# 128x32 OLED Display
-reset_pin = DigitalInOut(board.D4)
-display = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c, reset=reset_pin)
-# Clear the display.
-display.fill(0)
-display.show()
-width = display.width
-height = display.height
-
-# Configure LoRa Radio
-CS = DigitalInOut(board.CE1)
-RESET = DigitalInOut(board.D25)
-spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
-rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, 915.0)
-rfm9x.tx_power = 23
-prev_packet = None
-
-# Grabbing Hostname
+# Get system hostname
 hostname = socket.gethostname()
-hostname_str = f"{hostname}\r\n"
 
-# GPS data file path
-gps_data_file = '/home/ronin/Documents/GPS/gps_data.txt'
+# Check if a message was provided as an argument
+if len(sys.argv) < 2:
+    print("No message provided. Usage: python3 lora-secure-transmit.py '<message>'")
+    sys.exit(1)
 
-while True:
-    packet = None
-    # draw a box to clear the image
-    display.fill(0)
-    display.text('RasPi LoRa', 35, 0, 1)
+# Get the message from the command-line argument
+message = sys.argv[1]
 
-    # check for packet rx
-    packet = rfm9x.receive()
-    if packet is None:
-        display.show()
-        display.text('- Waiting for PKT -', 15, 20, 1)
-    else:
-        # Display the packet text and rssi
-        display.fill(0)
-        prev_packet = packet
-        packet_text = str(prev_packet, "utf-8")
-        display.text('RX: ', 0, 0, 1)
-        display.text(packet_text, 25, 0, 1)
-        time.sleep(1)
+# Format message to include hostname
+full_message = f"{hostname}:{message}"
+print(f"📡 Preparing to send: {full_message}")
 
-    if not btnA.value:
-        # Send Button A
-        display.fill(0)
-        button_a_data = bytes(hostname_str, "utf-8")
-        rfm9x.send(button_a_data)
-        display.text('Sent Button A!', 25, 15, 1)
-    elif not btnB.value:
-        # Send GPS data with Button B
-        try:
-            with open(gps_data_file, 'r') as file:
-                gps_data = file.read().strip()
-                if gps_data:
-                    gps_data_bytes = bytes(gps_data + "\r\n", "utf-8")
-                    rfm9x.send(gps_data_bytes)
-                    display.fill(0)
-                    display.text('Sent GPS Data!', 25, 15, 1)
-                    display.show()
-        except FileNotFoundError:
-            display.fill(0)
-            display.text('GPS Data Not Found', 15, 15, 1)
-    elif not btnC.value:
-        # Send Button C
-        display.fill(0)
-        button_c_data = bytes("Button C!\r\n", "utf-8")
-        rfm9x.send(button_c_data)
-        display.text('Sent Button C!', 25, 15, 1)
+# Initialize SPI (SCK, MOSI, MISO)
+spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
 
-    display.show()
-    time.sleep(0.1)
+# Use GPIO22 (Pin 15) for CS (NSS) and GPIO27 (Pin 13) for Reset
+cs = digitalio.DigitalInOut(board.D22)  # GPIO22 (Pin 15)
+reset = digitalio.DigitalInOut(board.D27)  # GPIO27 (Pin 13)
+
+# Initialize the RFM9x module with custom settings
+try:
+    rfm9x = adafruit_rfm9x.RFM9x(spi, cs, reset, 915.17)  # Custom Frequency
+    rfm9x.sync_word = <CHOSEN TWO BYTE HEX i.e. 0xaa>  # Custom Sync Word
+    print("✅ RFM9x successfully initialized!")
+
+    # Encrypt the message
+    encrypted_msg = xor_encrypt_decrypt(full_message.encode(), KEY)
+
+    # Send the encrypted message
+    rfm9x.send(encrypted_msg)
+    print(f"📡 Sent encrypted message: {full_message}")
+
+except RuntimeError as e:
+    print(f"❌ RFM9x initialization failed: {e}")
+
+# TODO: add timestamp and other logic
+# Fix power supply
