@@ -4,9 +4,8 @@ import time
 import board
 import adafruit_hcsr04
 import subprocess
-import os  # Required to access environment variables
 
-sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.D5, echo_pin=board.D6)
+sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.D20, echo_pin=board.D21)
 
 while True:
     try:
@@ -15,23 +14,16 @@ while True:
 
         # Check if object is within 150 cm
         if distance < 150:
-            print("Object detected within 150 cm! Running MariaDB query...")
+            print(f"Object detected within {distance:.2f} cm! Sending via LoRa...")
 
-            # Retrieve the SHOGUN password from environment variables
-            shogun_password = os.getenv("SHOGUN")
-            # Execute MariaDB command
+            # Run LoRa transmission script with distance as argument
             subprocess.run([
-                "mariadb",
-                "-h", "sqid.ink",
-                "-u", "shogun",
-                f"--password={shogun_password}",
-                "capstone",
-                "--execute=SELECT * FROM machines;"
+                "python3", "/home/ronin/Documents/LoRa/lora-secure-transmit.py", f"{distance:.2f} cm"
             ], check=True)
         else:
-            print("Nothing there")
+            print("No object detected.")
 
     except RuntimeError:
-        print("Retrying!")
+        print("Retrying sensor read...")
 
-    time.sleep(10)
+    time.sleep(1.5)
