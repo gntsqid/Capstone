@@ -121,3 +121,40 @@ Be sure to set the mariadb to allow connections from anywhere:
 # replace bind-address with 0.0.0.0
 sudo vim /etc/mysql/mariadb.conf.d/50-server.cnf
 ```
+
+```Bash
+odin@jotunheim:~/DATABASE$ curl -X GET https://api.capstone.sqid.ink/machines -H "X-API-key: $CAPSTONE_API_SECRET" | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   402  100   402    0     0   3956      0 --:--:-- --:--:-- --:--:--  3980
+[
+  {
+    "machine_id": 1,
+    "hostname": "oni",
+    "online": 1,
+    "parking_lot": "N/A",
+    "parking_space": "N/A",
+    "type": "relay",
+    "parking_space_available": 0
+  },
+  {
+    "machine_id": 2,
+    "hostname": "kitsune",
+    "online": 0,
+    "parking_lot": "A0",
+    "parking_space": "A01",
+    "type": "sensor",
+    "parking_space_available": 0
+  },
+  {
+    "machine_id": 3,
+    "hostname": "jotunheim",
+    "online": 1,
+    "parking_lot": "N/A",
+    "parking_space": "N/A",
+    "type": "server",
+    "parking_space_available": 0
+  }
+]
+```
+
