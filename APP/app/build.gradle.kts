@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" // Correct way to apply plugin
 }
+
 
 android {
     namespace = "com.example.capstone"
@@ -16,6 +18,8 @@ android {
 
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CAPSTONE_API_KEY", "\"${project.findProperty("CAPSTONE_API_KEY") ?: ""}\"")
     }
 
     buildTypes {
@@ -45,6 +49,8 @@ android {
         kotlinCompilerExtensionVersion = "1.5.3"
     }
 }
+
+
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")

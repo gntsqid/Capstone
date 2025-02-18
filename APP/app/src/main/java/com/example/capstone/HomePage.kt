@@ -30,7 +30,8 @@ class HomePage : ComponentActivity() {
 
             LaunchedEffect(Unit) {
                 val apiService = RetrofitClient.instance
-                apiService.getMachines("").enqueue(object : Callback<List<Machine>> {
+                val apiKey = BuildConfig.CAPSTONE_API_KEY
+                apiService.getMachines(apiKey).enqueue(object : Callback<List<Machine>> {
                     override fun onResponse(call: Call<List<Machine>>, response: Response<List<Machine>>) {
                         if (response.isSuccessful) {
                             machineList = response.body() ?: emptyList()
