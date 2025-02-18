@@ -82,4 +82,13 @@ The next step is to create a REST API to expose it.
 
 I have also decided to create an Android app instead and am dropping PHP fully. 
 
+---
+**1/15/2025**\
+I've begun work on the Android Application that will be used as part of the final product.\
+Through quite a bit of troubleshooting, I have the mapbox API connected and am able to browse a static map.
+
+I have also added a search feature that doesn't do anything but accept user input and will need to properly implement that soon.
+
+Next steps are likely going to need to be getting a more dynamic map working such as enabling a simple search field (or perhaps storing it as a button such as "click here to go to school" and the map goes to there.\
+Keep in mind I do not mean directions yet at this time with the route, only a search.
 
