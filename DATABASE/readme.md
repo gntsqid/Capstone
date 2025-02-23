@@ -158,3 +158,81 @@ odin@jotunheim:~/DATABASE$ curl -X GET https://api.capstone.sqid.ink/machines -H
 ]
 ```
 
+---
+# AUTO UPDATE TABLES
+After making a new table, I can fill it with stuff from my current one
+```SQL
+CREATE TABLE sensor_table (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    parking_lot VARCHAR(50) NOT NULL DEFAULT 'unknown',
+    parking_space VARCHAR(50) NOT NULL DEFAULT 'unknown',
+    parking_space_available TINYINT(1) NOT NULL DEFAULT 0
+);
+
+INSERT INTO sensor_table (parking_lot, parking_space, parking_space_available)
+SELECT parking_lot, parking_space, parking_space_available
+FROM machines
+WHERE type = 'sensor';
+```
+**OR**
+
+Here is an attempt from chatGPT on how to do that which I have not tried yet:
+```SQL
+-- Create the separate table with an auto-increment primary key
+CREATE TABLE sensor_table (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    parking_lot VARCHAR(50) NOT NULL DEFAULT 'unknown',
+    parking_space VARCHAR(50) NOT NULL DEFAULT 'unknown',
+    parking_space_available TINYINT(1) NOT NULL DEFAULT 0
+);
+
+-- Trigger to handle INSERT operations on machines
+DELIMITER //
+CREATE TRIGGER sensor_after_insert
+AFTER INSERT ON machines
+FOR EACH ROW
+BEGIN
+  IF NEW.type = 'sensor' THEN
+    INSERT INTO sensor_table (parking_lot, parking_space, parking_space_available)
+    VALUES (NEW.parking_lot, NEW.parking_space, NEW.parking_space_available);
+  END IF;
+END;//
+DELIMITER ;
+
+-- Trigger to handle UPDATE operations on machines
+DELIMITER //
+CREATE TRIGGER sensor_after_update
+AFTER UPDATE ON machines
+FOR EACH ROW
+BEGIN
+  IF NEW.type = 'sensor' THEN
+    UPDATE sensor_table
+    SET parking_lot = NEW.parking_lot,
+        parking_space = NEW.parking_space,
+        parking_space_available = NEW.parking_space_available
+    WHERE parking_lot = OLD.parking_lot AND parking_space = OLD.parking_space;
+    IF ROW_COUNT() = 0 THEN
+      INSERT INTO sensor_table (parking_lot, parking_space, parking_space_available)
+      VALUES (NEW.parking_lot, NEW.parking_space, NEW.parking_space_available);
+    END IF;
+  ELSE
+    DELETE FROM sensor_table
+    WHERE parking_lot = OLD.parking_lot AND parking_space = OLD.parking_space;
+  END IF;
+END;//
+DELIMITER ;
+
+-- Trigger to handle DELETE operations on machines
+DELIMITER //
+CREATE TRIGGER sensor_after_delete
+AFTER DELETE ON machines
+FOR EACH ROW
+BEGIN
+  IF OLD.type = 'sensor' THEN
+    DELETE FROM sensor_table
+    WHERE parking_lot = OLD.parking_lot AND parking_space = OLD.parking_space;
+  END IF;
+END;//
+DELIMITER ;
+```
+
