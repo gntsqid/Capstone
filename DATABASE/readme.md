@@ -88,6 +88,9 @@ MariaDB [capstone]> describe machines;
 ---
 #### Machines
 > dev-note: 2/11/2025
+```SQL
+insert into machines (hostname, online, parking_lot, parking_space, type, parking_space_available) values ('oni', false,'unknown','unknown','relay', false);
+```
 ```Bash
 MariaDB [capstone]> select * from machines;
 +------------+-----------+--------+-------------+---------------+--------+-------------------------+
