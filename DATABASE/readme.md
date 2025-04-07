@@ -91,6 +91,17 @@ MariaDB [capstone]> describe machines;
 ```SQL
 insert into machines (hostname, online, parking_lot, parking_space, type, parking_space_available) values ('oni', false,'unknown','unknown','relay', false);
 ```
+```SQL
+INSERT INTO machines (hostname, online, parking_lot, parking_space, lng, lat, type, parking_space_available) VALUES
+('oni',      1, 'N/A', 'N/A',        -119.041125, 34.1589012, 'relay',  0),
+('kitsune',  0, 'N/A', 'N/A',        -119.041125, 34.1589012, 'sensor', 1),
+('fake-1',   1, 'A1',  'AA1',        -119.0433568, 34.1627541, 'sensor', 1),
+('fake-2',   1, 'A1',  'AA2',        -119.0433568, 34.1627541, 'sensor', 1),
+('fake-3',   1, 'A10', 'B01',        -119.0482936, 34.1609174, 'sensor', 0),
+('fake-4',   1, 'A10', 'C15',        -119.0482936, 34.1609174, 'sensor', 0),
+('fake-5',   1, 'A7',  'AA1',        -119.0417317, 34.1608505, 'sensor', 1);
+```
+> above is from after the GPS update
 ```Bash
 MariaDB [capstone]> select * from machines;
 +------------+-----------+--------+-------------+---------------+--------+-------------------------+
