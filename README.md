@@ -92,3 +92,30 @@ I have also added a search feature that doesn't do anything but accept user inpu
 Next steps are likely going to need to be getting a more dynamic map working such as enabling a simple search field (or perhaps storing it as a button such as "click here to go to school" and the map goes to there.\
 Keep in mind I do not mean directions yet at this time with the route, only a search.
 
+---
+**4/7/2025**\
+I have not been updating this as I should have, however a lot has happened in the past few weeks.\
+For starters, Dr. Feister has approved the hardware design.\
+It is good as is.
+
+Next, it was decided that the app development was too costly in terms of time and skill and should be dropped in favor of web development.\
+The web page is [capstone.sqid.ink](https://capstone.sqid.ink).\
+The page is made with ASP.NET Razor pages after I followed several trainings on it.
+
+Furthermore, the page (and the entire worflow) now gets and sends its data through an API.\
+This API and the database are fully containerized docker compose files running as a proxy through my web server.\
+This means we can fetch the data like so:
+```Bash
+curl -H "X-API-Key: $API_SECRET" https://api.capstone.sqid.ink/machines | jq
+```
+
+Finally, I am utilizing the web page to point parking space GPS locations to a mapbox service I am running on my subdomain [map.capstone.sqid.ink](https://map.capstone.sqid.ink/?lng=-119.0449353&lat=34.1608897
+
+I simply now need to do the following:
+- polish the front end
+- decide if I want to incorporate map directions (though I need this costs money)
+- ensure the radio is fully working
+- do the poster
+- ???
+- graduate
+
