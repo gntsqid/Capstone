@@ -60,7 +60,7 @@ mariadb -u <username> -p --database=capstone --execute='describe machines;'
 
 ---
 ### Tables
-> dev-note: 2/11/2025
+> dev-note: updated 4/7/2025
 ```SQL
 MariaDB [capstone]> show tables;
 +--------------------+
@@ -79,10 +79,12 @@ MariaDB [capstone]> describe machines;
 | online                  | tinyint(1)   | NO   |     | 0       |                |
 | parking_lot             | varchar(50)  | NO   |     | unknown |                |
 | parking_space           | varchar(50)  | NO   |     | unknown |                |
+| lng                     | decimal(9,6) | YES  |     | NULL    |                |
+| lat                     | decimal(9,6) | YES  |     | NULL    |                |
 | type                    | varchar(50)  | NO   |     | unknown |                |
 | parking_space_available | tinyint(1)   | NO   |     | 0       |                |
 +-------------------------+--------------+------+-----+---------+----------------+
-7 rows in set (0.001 sec)
+9 rows in set (0.001 sec)
 ```
 
 ---
