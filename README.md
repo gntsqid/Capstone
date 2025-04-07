@@ -109,7 +109,7 @@ This means we can fetch the data like so:
 curl -H "X-API-Key: $API_SECRET" https://api.capstone.sqid.ink/machines | jq
 ```
 
-Finally, I am utilizing the web page to point parking space GPS locations to a mapbox service I am running on my subdomain [map.capstone.sqid.ink](https://map.capstone.sqid.ink/?lng=-119.0449353&lat=34.1608897
+Finally, I am utilizing the web page to point parking space GPS locations to a mapbox service I am running on my subdomain [map.capstone.sqid.ink](https://map.capstone.sqid.ink/?lng=-119.0449353&lat=34.1608897)
 
 I simply now need to do the following:
 - polish the front end
