@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mariadb:10.5
+    restart: always
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db-init/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - capstone_net
+
+  api:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - capstone_net
+
+volumes:
+  db_data:
+
+networks:
+  capstone_net:
