@@ -38,7 +38,7 @@ reset = digitalio.DigitalInOut(board.D27)  # GPIO27 (Pin 13)
 try:
     rfm9x = adafruit_rfm9x.RFM9x(spi, cs, reset, 915.17)  # Custom Frequency
     rfm9x.sync_word = <CHOSEN TWO BYTE HEX i.e. 0xaa>  # Custom Sync Word
-    print("✅ RFM9x successfully initialized!")
+    print("RFM9x successfully initialized!")
 
     # Encrypt the message
     encrypted_msg = xor_encrypt_decrypt(full_message.encode(), KEY)
@@ -48,7 +48,7 @@ try:
     print(f"📡 Sent encrypted message: {full_message}")
 
 except RuntimeError as e:
-    print(f"❌ RFM9x initialization failed: {e}")
+    print(f"RFM9x initialization failed: {e}")
 
 # TODO: add timestamp and other logic
 # Fix power supply
