@@ -49,7 +49,7 @@ while True:
             message = decrypted_msg
 
         # Print formatted output
-        print(f"📩 Received message from {sender_hostname}: {message}")
+        print(f"Received message from {sender_hostname}: {message}")
 
         # Log the message
         logging.info(f"{sender_hostname}: {message}")
