@@ -119,3 +119,15 @@ I simply now need to do the following:
 - ???
 - graduate
 
+---
+**4/21/2025**\
+I have uploaded everything relevant to the final project and will publish it before the presentation next week.\
+I will also try to add real photos of the hardware soon.
+
+The journey from start to finish for this project has been as stressful as it has been fun.\
+Being able to learn so many things and bring all that together into a single product is quite validating.\
+This officially marks the end of this dev log and I likely will not be working on it further.
+
+One final note: I will leave the sight and its real GPS but dummy availability data running for the forseeable future....or until my server wears out.
+
+Cheers!
