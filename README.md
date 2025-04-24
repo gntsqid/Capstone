@@ -1,5 +1,9 @@
 # Capstone
-My capstone project for CSUCI Spring 2025.
+My capstone project for CSUCI Spring 2025.\
+The final version is a proof-of-concept LoRaWAN relay network of parking lot sensors.\
+The idea started as a way to elevate accesible parking infrastructure by providing a low-cost live availability solution.
+
+If you didn't get to here from there, check out the sites [capstone.sqid.ink](capstone.sqid.ink) and the [map version](map.capstone.sqid.ink/full-map)
 
 ## Dev-Notes
 **10/09/2024**\
